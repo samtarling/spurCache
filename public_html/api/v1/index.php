@@ -2,7 +2,7 @@
 /**
  * API endpoint
  * 
- * PHP version 8
+ * PHP version 7.3
  *
  * @category  API
  * @package   SpurCache

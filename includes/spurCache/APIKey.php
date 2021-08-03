@@ -2,7 +2,7 @@
 /**
  * API Key Object
  * 
- * PHP version 8
+ * PHP version 7.3
  *
  * @category  Class
  * @package   SpurCache
