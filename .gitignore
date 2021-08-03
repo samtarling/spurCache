@@ -1,6 +1,8 @@
 vendor/
 .env
 scratch.php
+logs/
+replica.my.cnf
 
 # Editors
 .vscode/
