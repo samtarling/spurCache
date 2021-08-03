@@ -181,10 +181,21 @@ class APIController
             if ($this->validateKey($api_key)) {
                 if (isset($_GET['type'])) {
                     $stat_type = $_GET['type'];
+
+                    // TODO: This should have been a switch eh...
                     if ($stat_type === "country") {
                         $stats = (new CacheController())->getCountryCounts();
                         $this->returnJSON(true, (array) $stats->fetch_all(MYSQLI_ASSOC));
+                    } elseif ($stat_type === "org") {
+                        $stats = (new CacheController())->getOrgCounts();
+                        $this->returnJSON(true, (array) $stats->fetch_all(MYSQLI_ASSOC));
+                    } elseif ($stat_type === "city") {
+                        $stats = (new CacheController())->getCityCounts();
+                        $this->returnJSON(true, (array) $stats->fetch_all(MYSQLI_ASSOC));
+                    } else {
+                        $this->returnJSON(false, null, "Unknown statistic");
                     }
+                    
                 } else {
                     $this->returnJSON(false, null, "Missing parameter - &type=");
                 }
