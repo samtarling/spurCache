@@ -1,0 +1,6 @@
+vendor/
+.env
+scratch.php
+
+# Editors
+.vscode/
