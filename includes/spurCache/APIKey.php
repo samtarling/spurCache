@@ -32,11 +32,11 @@ use Exception;
  */
 class APIKey
 {
-    public string $key;
-    public DateTime $valid_from;
-    public DateTime $valid_until;
-    public string $assigned_to;
-    public bool $is_valid;
+    public $key;
+    public $valid_from;
+    public $valid_until;
+    public $assigned_to;
+    public $is_valid;
 
     /**
      * Construct
@@ -45,7 +45,7 @@ class APIKey
      * 
      * @return object
      */
-    function __construct(string $api_key)
+    function __construct($api_key)
     {
         try {
             $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../config/');

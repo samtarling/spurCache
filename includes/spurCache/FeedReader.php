@@ -86,7 +86,7 @@ class FeedReader
      * 
      * @return void
      */
-    public function saveFeedData(string $feed_data)
+    public function saveFeedData($feed_data)
     {
         try {
             // Create connection
@@ -136,7 +136,7 @@ class FeedReader
      *
      * @return string
      */
-    public function processFeedData(int $feed_id)
+    public function processFeedData($feed_id)
     {
         try {
             // Create connection
@@ -263,7 +263,7 @@ class FeedReader
      * 
      * @return boolean
      */
-    public function changeFeedStatus(int $feed_id, int $feed_status)
+    public function changeFeedStatus($feed_id, $feed_status)
     {
         try {
             // Create connection

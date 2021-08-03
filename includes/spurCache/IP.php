@@ -32,19 +32,19 @@ use Exception;
  */
 class IP
 {
-    public string $id;
-    public DateTime $cache_timestamp;
-    public string $IP;
-    public int $user_count;
-    public ?string $maxmind_city;
-    public ?string $maxmind_cc;
-    public ?string $maxmind_subdivision;
-    public ?array $services;
-    public ?string $org;
-    public ?float $getipintel_score;
-    public ?string $raw_feed_result;
-    public ?bool $do_not_purge;
-    public ?bool $hidden;
+    public $id;
+    public $cache_timestamp;
+    public $IP;
+    public $user_count;
+    public $maxmind_city;
+    public $maxmind_cc;
+    public $maxmind_subdivision;
+    public $services;
+    public $org;
+    public $getipintel_score;
+    public $raw_feed_result;
+    public $do_not_purge;
+    public $hidden;
 
     /**
      * Construct
@@ -53,7 +53,7 @@ class IP
      * 
      * @return object
      */
-    function __construct(string $ip_address)
+    function __construct($ip_address)
     {
         try {
             $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../config/');

@@ -47,7 +47,7 @@ class CacheController
      * 
      * @return object
      */
-    public function getCachedRecord(string $ip_address)
+    public function getCachedRecord($ip_address)
     {
         try {
             // Create connection
@@ -102,17 +102,17 @@ class CacheController
      * @return mixed
      */
     public function writeCacheRecord(
-        string $ip,
-        ?int $user_count,
-        ?string $maxmind_city,
-        ?string $maxmind_cc,
-        ?string $maxmind_subdivision,
-        array $services,
-        ?string $org,
-        string $raw_feed_result,
-        int $record_num,
-        bool $do_not_purge = false,
-        bool $hidden = false
+        $ip,
+        $user_count,
+        $maxmind_city,
+        $maxmind_cc,
+        $maxmind_subdivision,
+        $services,
+        $org,
+        $raw_feed_result,
+        $record_num,
+        $do_not_purge = false,
+        $hidden = false
     ) {
         try {
             // Create connection

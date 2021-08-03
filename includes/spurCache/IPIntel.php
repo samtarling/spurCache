@@ -30,9 +30,9 @@ use Exception;
  */
 class IPIntel
 {
-    public string $status;
-    public float $result;
-    public string $queryIP;
+    public $status;
+    public $result;
+    public $queryIP;
 
     /**
      * Query an IP address against https://getipintel.net
@@ -41,7 +41,7 @@ class IPIntel
      * 
      * @return mixed
      */
-    function __construct(string $ip_address)
+    function __construct($ip_address)
     {
         $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../config/');
         $dotenv->load();

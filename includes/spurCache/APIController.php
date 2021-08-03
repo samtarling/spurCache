@@ -48,7 +48,7 @@ class APIController
      * 
      * @return mixed
      */
-    public function validateKey(string $api_key)
+    public function validateKey($api_key)
     {
         try {
             // Create connection
@@ -89,7 +89,7 @@ class APIController
      * 
      * @return void
      */
-    public function parseAction(string $api_key, string $action)
+    public function parseAction($api_key, $action)
     {
         try {
             if ($this->validateKey($api_key)) {
@@ -119,7 +119,7 @@ class APIController
      *
      * @return void
      */
-    public function getServerTime(string $api_key)
+    public function getServerTime($api_key)
     {
         $dateTime = new DateTime();
         $this->logAPICall($api_key, 'action=time');
@@ -133,7 +133,7 @@ class APIController
      * 
      * @return void
      */
-    public function apiQueryIP(string $api_key)
+    public function apiQueryIP($api_key)
     {
         try {
             if ($this->validateKey($api_key)) {
@@ -174,7 +174,7 @@ class APIController
      * 
      * @return void
      */
-    public function returnJSON(bool $success, ?array $data, ?string $error = null)
+    public function returnJSON($success, $data, $error = null)
     {
         header("Content-Type: application/json");
         if ($success) {
@@ -221,7 +221,7 @@ class APIController
      * 
      * @return void
      */
-    public function logAPICall(string $api_key, string $query)
+    public function logAPICall($api_key, $query)
     {
         try {
             // Create connection
