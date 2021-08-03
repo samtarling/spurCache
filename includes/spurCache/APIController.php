@@ -146,16 +146,16 @@ class APIController
                                 $this->logAPICall($api_key, 'action=query&ip=' . $ip_address);
                                 $this->returnJSON(true, (array) $IP);
                             } else {
-                                $this->returnJSON(true, null, "IP is marked as hidden");
+                                $this->returnJSON(false, null, "IP is marked as hidden");
                             }
                         } else {
-                            $this->returnJSON(true, null, "IP not found in database");
+                            $this->returnJSON(false, null, "IP not found in database");
                         }
                     } else {
-                        $this->returnJSON(true, null, "Invalid IP format");
+                        $this->returnJSON(false, null, "Invalid IP format");
                     }
                 } else {
-                    $this->returnJSON(true, null, "Missing parameter - &ip=");
+                    $this->returnJSON(false, null, "Missing parameter - &ip=");
                 }
             } else {
                 $this->invalidKey();
