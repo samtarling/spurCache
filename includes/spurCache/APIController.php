@@ -98,7 +98,7 @@ class APIController
                     $this->apiQueryIP($api_key);
                     break;
                 case "time":
-                    $this->getServerTime();
+                    $this->getServerTime($api_key);
                     break;
                 default:
                     $this->noSuchAction();
@@ -114,12 +114,15 @@ class APIController
 
     /**
      * Return the server date/time
+     * 
+     * @param $api_key API key
      *
      * @return void
      */
-    public function getServerTime()
+    public function getServerTime(string $api_key)
     {
         $dateTime = new DateTime();
+        $this->logAPICall($api_key, 'action=time');
         $this->returnJSON(true, (array) $dateTime);
     }
 
@@ -140,6 +143,7 @@ class APIController
                         $IP = (new CacheController())->getCachedRecord($ip_address);
                         if ($IP !== false) {
                             if (!$IP->hidden) {
+                                $this->logAPICall($api_key, 'action=query&ip=' . $ip_address);
                                 $this->returnJSON(true, (array) $IP);
                             } else {
                                 $this->returnJSON(true, null, "IP is marked as hidden");
@@ -207,5 +211,54 @@ class APIController
     public function invalidKey()
     {
         $this->returnJSON(false, null, "Invalid API key");
+    }
+
+    /**
+     * Log an API call
+     *
+     * @param string $api_key Used API key
+     * @param string $query   Query made
+     * 
+     * @return void
+     */
+    public function logAPICall(string $api_key, string $query)
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $stmt = $conn->prepare(
+                'INSERT INTO api_log (
+                    log_timestamp,
+                    api_key,
+                    query
+                ) VALUES (
+                    ?,
+                    ?,
+                    ?
+                )'
+            );
+
+            $date = date('Y-m-d H:i:s');
+            $stmt->bind_param(
+                'sss',
+                $date,
+                $api_key,
+                $query
+            );
+            $stmt->execute();
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
     }
 }
