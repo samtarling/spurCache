@@ -83,6 +83,42 @@ class CacheController
     }
     
     /**
+     * Get a count of each country code we see in the db
+     *
+     * @return object
+     */
+    public function getCountryCounts()
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $stmt = $conn->prepare("SELECT maxmind_cc, COUNT(*) AS `count` FROM feed_cache GROUP BY maxmind_cc ORDER BY count DESC");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                return $result;
+            } else {
+                return false;
+            }
+
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
      * Write a Spur record to the cache db
      * 
      * @param string $ip                  IP address
