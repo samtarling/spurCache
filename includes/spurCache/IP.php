@@ -45,6 +45,7 @@ class IP
     public $raw_feed_result;
     public $do_not_purge;
     public $hidden;
+    public $expired;
 
     /**
      * Construct
@@ -95,6 +96,7 @@ class IP
                 $this->raw_feed_result = $cache_row['raw_feed_result'];
                 $this->do_not_purge = boolval($cache_row['do_not_purge']);
                 $this->hidden = boolval($cache_row['hidden']);
+                $this->expired = boolval($cache_row['expired']);
 
                 return $this;
             } else {
@@ -102,6 +104,69 @@ class IP
                     "Did not return one result for $ip_address (got " . $result->num_rows . ")"
                 );
             }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * Query IPIntel and update score
+     *
+     * @return void
+     */
+    public function updateIPIntel()
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $stmt = $conn->prepare('UPDATE feed_cache SET getipintel_score = ? WHERE cache_id = ?');
+
+            $IPIntel = new IPIntel($this->IP);
+
+            if ($IPIntel->status === "success") {
+                $stmt->bind_param('ss', $IPIntel->result, $this->id);
+                $stmt->execute();
+                $this->getipintel_score = floatval($IPIntel->result);
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function markCacheExpired()
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $stmt = $conn->prepare('UPDATE feed_cache SET expired = ? WHERE cache_id = ?');
+            $expired = 1;
+            $stmt->bind_param('is', $expired, $this->id);
+            $stmt->execute();
+            $this->expired = true;
         } catch (Exception $e) {
             return $e->getMessage();
         }

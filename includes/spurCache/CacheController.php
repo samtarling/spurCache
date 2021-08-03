@@ -19,6 +19,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use mysqli;
 use Exception;
+use DateTime;
 
 /**
  * Cache Controller Object
@@ -193,6 +194,117 @@ class CacheController
 
             $stmt->execute();
 
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * Get all records
+     *
+     * @param bool $get_hidden Get hidden results
+     * 
+     * @return object
+     */
+    public function getAllRecords($get_hidden)
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+
+            if ($get_hidden) {
+                $sql = "SELECT * FROM feed_cache;";
+            } else {
+                $sql = "SELECT * FROM feed_cache WHERE hidden = '0';";
+            }
+            $results = $conn->query($sql);
+
+            if ($results->num_rows > 0) {
+                return $results;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * Check a given record for cache expiry
+     *
+     * @param string $ip_address IP address
+     * 
+     * @return bool
+     */
+    public function checkExpire($ip_address)
+    {
+        try {
+            $IP = new IP($ip_address);
+            $cache_timestamp = $IP->cache_timestamp;
+            $now = new DateTime();
+            $cache_expiry = new DateTime($cache_timestamp->format('Y-m-d H:i:s') . ' + 24 hours');
+
+            if ($now > $cache_expiry) {
+                // Cache record has expired
+                $IP->markCacheExpired();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * Delete expired records
+     *
+     * @return void
+     */
+    public function deleteExpired()
+    {
+        try {
+            $records = $this->getAllRecords(true);
+            while ($record = $records->fetch_assoc()) {
+                $IP = new IP($record['ip_address']);
+                if ($IP->expired) {
+                    if (!$IP->do_not_purge) {
+                        // Create connection
+                        $conn = new mysqli(
+                            $_ENV['DB_HOSTNAME'],
+                            $_ENV['DB_USERNAME'],
+                            $_ENV['DB_PASSWORD'],
+                            $_ENV['DB_DATABASE']
+                        );
+
+                        // Check connection
+                        if ($conn->connect_error) {
+                            die("Connection failed: " . $conn->connect_error);
+                        }
+
+                        $conn->begin_transaction();
+                        $stmt = $conn->prepare('DELETE FROM feed_cache WHERE cache_id = ?');
+                        $stmt->bind_param('s', $IP->id);
+                        if($stmt->execute()) {
+                            $conn->commit();
+                        } else {
+                            $conn->rollback();
+                        }
+                        $conn->close();
+                    }
+                }
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }
