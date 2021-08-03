@@ -158,7 +158,7 @@ class CacheController
                     ?,
                     ?,
                     ?
-                ) ON DUPLICATE KEY UPDATE cache_timestamp = ?, services = ?, getipintel_score = ?'
+                ) ON DUPLICATE KEY UPDATE cache_timestamp = ?, services = ?, getipintel_score = ?, user_count = ?'
             );
 
             $cache_timestamp = date('Y-m-d H:i:s');
@@ -169,7 +169,7 @@ class CacheController
             //$getIpIntel = (new IPIntel($ip))->result;
 
             $stmt->bind_param(
-                'sssisssssisiissi',
+                'sssisssssisiissii',
                 $cache_id,
                 $cache_timestamp,
                 $ip,
@@ -185,7 +185,8 @@ class CacheController
                 $hidden,
                 $cache_timestamp,
                 $services,
-                $getIpIntel
+                $getIpIntel,
+                $user_count
             );
 
             if ($_ENV['DEBUG'] == "1") {
