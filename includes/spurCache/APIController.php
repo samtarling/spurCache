@@ -97,6 +97,9 @@ class APIController
                 case "query":
                     $this->apiQueryIP($api_key);
                     break;
+                case "live":
+                    $this->apiQuerySpur($api_key);
+                    break;
                 case "time":
                     $this->getServerTime($api_key);
                     break;
@@ -169,6 +172,83 @@ class APIController
     }
 
     /**
+     * Query Spur directly for live information
+     *
+     * @param string $api_key API key
+     * 
+     * @return void
+     */
+    public function apiQuerySpur($api_key)
+    {
+        try {
+            if ($this->validateKey($api_key)) {
+                if (isset($_GET['ip'])) {
+                    $ip_address = $_GET['ip'];
+                    if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) || filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                        if (isset($_GET['spurKey'])) {
+                            $spurKey = $_GET['spurKey'];
+                            $live = $this->querySpur($spurKey, $ip_address);
+                            if ($live !== false) {
+                                $this->logAPICall($api_key, 'action=live&ip=' . $ip_address);
+                                $this->returnJSON(true, (array) $live);
+                            } else {
+                                $this->returnJSON(false, null, "There was an error at Spur's end of this API call");
+                            }
+                        } else {
+                            $this->returnJSON(false, null, "You must also have a Spur API key");
+                        }
+                    } else {
+                        $this->returnJSON(false, null, "Invalid IP format");
+                    }
+                } else {
+                    $this->returnJSON(false, null, "Missing parameter - &ip=");
+                }
+            } else {
+                $this->invalidKey();
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function querySpur($spurKey, $ip_address)
+    {
+        try {
+            $ch = curl_init();
+            curl_setopt(
+                $ch,
+                CURLOPT_RETURNTRANSFER,
+                true
+            );
+            curl_setopt(
+                $ch,
+                CURLOPT_URL,
+                $_ENV['SPUR_CONTEXT_URL'] . $ip_address
+            );
+            curl_setopt(
+                $ch,
+                CURLOPT_HTTPHEADER,
+                array(
+                    "Token: $spurKey"
+                )
+            );
+            $result = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+
+            // TODO: Better detection of a failed API call
+            // If the "code" key exists, there was probably an error of some sort...
+            if (!key_exists('code', $result)) {
+                return $result;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+        
+    }
+
+    /**
      * Get stats about the data we hold
      *
      * @param string $api_key API key
@@ -225,11 +305,13 @@ class APIController
         if ($success) {
             $return = array(
                 'status' => 'success',
+                'time' => (new DateTime())->getTimestamp(),
                 'result' => $data
             );
         } else {
             $return = array(
                 'status' => 'error',
+                'time' => (new DateTime())->getTimestamp(),
                 'error' => $error
             );
         }
