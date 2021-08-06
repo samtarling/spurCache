@@ -192,6 +192,43 @@ class CacheController
     }
 
     /**
+     * Get the count of the total number of records
+     *
+     * @return object
+     */
+    public function getRecordCount()
+    {
+        try {
+            // Create connection
+            $conn = new mysqli(
+                $_ENV['DB_HOSTNAME'],
+                $_ENV['DB_USERNAME'],
+                $_ENV['DB_PASSWORD'],
+                $_ENV['DB_DATABASE']
+            );
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $stmt = $conn->prepare("SELECT COUNT(*) AS `count` FROM feed_cache");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 1) {
+                $row = $result->fetch_assoc();
+                return $row['count'];
+            } else {
+                return false;
+            }
+
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
      * Write a Spur record to the cache db
      * 
      * @param string $ip                  IP address
@@ -203,6 +240,7 @@ class CacheController
      * @param string $org                 Org
      * @param string $raw_feed_result     Raw result
      * @param int    $record_num          Current record num
+     * @param int    $total_records       Total records in set
      * @param bool   $do_not_purge        Do not purge this result
      * @param bool   $hidden              Hide this result
      * 
@@ -221,6 +259,7 @@ class CacheController
         $org,
         $raw_feed_result,
         $record_num,
+        $total_records,
         $do_not_purge = false,
         $hidden = false
     ) {
@@ -298,11 +337,26 @@ class CacheController
                 $user_count
             );
 
-            if ($_ENV['DEBUG'] == "1") {
-                echo "[#$record_num]: IP $ip was added to the table (ts=$cache_timestamp, rec=$record_num)" . PHP_EOL;
-            }
+            
 
             $stmt->execute();
+
+            if ($conn->affected_rows === 1) {
+                // Insert
+                if ($_ENV['DEBUG'] == "1") {
+                    echo "[#$record_num/$total_records]: IP $ip was INSERTED into the table (ts=$cache_timestamp, rec=$record_num)" . PHP_EOL;
+                }
+            } elseif($conn->affected_rows === 2) {
+                // Update
+                if ($_ENV['DEBUG'] == "1") {
+                    echo "[#$record_num/$total_records]: IP $ip was UPDATED" . PHP_EOL;
+                }
+            } else {
+                // Failure
+                if ($_ENV['DEBUG'] == "1") {
+                    echo "[#$record_num/$total_records]: IP $ip was NOT INSERTED/UPDATED" . PHP_EOL;
+                }
+            }
 
         } catch (Exception $e) {
             return $e->getMessage();

@@ -192,6 +192,9 @@ class APIController
                     } elseif ($stat_type === "city") {
                         $stats = (new CacheController())->getCityCounts();
                         $this->returnJSON(true, (array) $stats->fetch_all(MYSQLI_ASSOC));
+                    } elseif ($stat_type === "count") {
+                        $stats = (new CacheController())->getRecordCount();
+                        $this->returnJSON(true, (array) $stats);
                     } else {
                         $this->returnJSON(false, null, "Unknown statistic");
                     }

@@ -162,7 +162,12 @@ class FeedReader
 
                 $feed_row = $result->fetch_assoc();
                 $feed_data = explode("\n", $feed_row['feed_data']);
-                $total_records = intval($feed_row['total_records']);
+                if (intval($feed_row['total_records']) === 0) {
+                    $total_records = count($feed_data);
+                } else {
+                    $total_records = intval($feed_row['total_records']);
+                }
+                
                 $current_record = 0;
 
                 if ($_ENV['DEBUG'] == "1") {
@@ -235,7 +240,8 @@ class FeedReader
                         $services,
                         $org,
                         $datapoint,
-                        $current_record
+                        $current_record,
+                        $total_records
                     );
 
                     $current_record++;
