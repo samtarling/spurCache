@@ -1,6 +1,7 @@
 {
     "name": "theresnotime/spurcache",
     "type": "project",
+    "description": "spurCache keeps a copy of all the JSON lines from latest.json",
     "require": {
         "vlucas/phpdotenv": "^5.3"
     },
